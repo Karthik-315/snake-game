@@ -124,24 +124,31 @@ const updateGameScore = function () {
 };
 
 const endGame = function (status) {
-    // Hide play area, display the play again screen and reset the game status,
-    gameArea.style.opacity = 0;
-    playAgainTitle.innerHTML = "GAME OVER!";
-    playAgainButton.innerHTML = `
+    // Hide play area, display the play again screen and reset the game status.
+    // document.querySelector(`.${snakeHeadClass}`).classList.add("game-over");
+    document.querySelectorAll(`.game__square`).forEach((square) => {
+        square.classList.add("game-over");
+    });
+
+    setTimeout(() => {
+        gameArea.style.opacity = 0;
+        playAgainTitle.innerHTML = "GAME OVER!";
+        playAgainButton.innerHTML = `
         <span class="play-again-text">PLAY AGAIN</span>
     `;
 
-    snakeBody = [];
+        snakeBody = [];
 
-    playAgainScreen.classList.remove("hidden");
-    playAgainScreen.classList.remove("exit-animation");
-    playAgainScreen.classList.add("entry-animation");
+        playAgainScreen.classList.remove("hidden");
+        playAgainScreen.classList.remove("exit-animation");
+        playAgainScreen.classList.add("entry-animation");
 
-    scoreArea.classList.add("end-game");
+        scoreArea.classList.add("end-game");
 
-    endCurrentScore.innerHTML = currentScore;
-    endHighScore.innerHTML = highScore;
-    scoreArea.classList.add("hidden");
+        endCurrentScore.innerHTML = currentScore;
+        endHighScore.innerHTML = highScore;
+        scoreArea.classList.add("hidden");
+    }, 1000);
 };
 
 const consumeFood = function (direction, tailRowPos, tailColPos) {

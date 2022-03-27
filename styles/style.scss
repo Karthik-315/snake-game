@@ -15,7 +15,6 @@
     padding: 0 2rem;
     background: #000;
     color: #fff;
-    border: 1px solid red;
 }
 
 body.light-mode .header {
@@ -38,7 +37,6 @@ body.light-mode .header {
 .header__score {
     @include useFlex($justifyDir: space-between);
     grid-column: 1/3;
-    border: 1px solid red;
 }
 
 .header__score article {
@@ -139,7 +137,11 @@ body.light-mode .header {
 .game__square {
     margin: 0.2rem;
     background: rgba(197, 197, 197, 0.1);
-    transition: all 0.1s;
+    transition: all 0.1s, opacity 2s ease-out;
+}
+
+.game__square.game-over {
+    opacity: 0;
 }
 
 body.light-mode .game__square {
@@ -148,7 +150,6 @@ body.light-mode .game__square {
 
 .game__square.snake-head {
     background: rgb(224, 193, 18);
-    @include useFlex();
 }
 
 .body.light-mode .game__square.snake-head {
@@ -183,7 +184,6 @@ body.light-mode .game__square {
     background: rgba(0, 0, 0, 0.7);
     transform: translateX(150%);
     transition: all 1s;
-    border: 1px solid red;
 }
 
 .main__play-again.entry-animation {
@@ -247,6 +247,10 @@ body.light-mode .play-again {
 
 .end-score {
     margin-top: 5rem;
+}
+
+.end-score article {
+    margin: 0 3rem;
 }
 
 .end-score__text {
