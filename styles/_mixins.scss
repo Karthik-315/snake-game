@@ -1,0 +1,6 @@
+@mixin useFlex($dir: row, $justifyDir: center, $alignDir: center) {
+    display: flex;
+    flex-direction: $dir;
+    justify-content: $justifyDir;
+    align-items: $alignDir;
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script
+            defer
+            src="https://kit.fontawesome.com/b798e919c8.js"
+            crossorigin="anonymous"
+        ></script>
+
+        <link rel="stylesheet" href="styles/style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+        />
+
+        <title>Snake Game</title>
+
+        <script defer src="scripts/app.js"></script>
+    </head>
+
+    <body class="body">
+        <header class="header">
+            <h1 class="header__title"><span>S</span>nake <span>g</span>ame</h1>
+
+            <section class="header__score hidden">
+                <article class="score--current">
+                    <h2 class="score__text">
+                        Score: <span class="current-score">0</span>
+                    </h2>
+                </article>
+
+                <article class="score--high">
+                    <h2 class="score__text">
+                        High Score: <span class="high-score">0</span>
+                    </h2>
+                </article>
+            </section>
+
+            <button class="button header__theme">
+                <i class="fa-solid fa-sun theme--light-icon"></i>
+                <i class="fa-solid fa-moon theme--dark-icon hidden"></i>
+            </button>
+        </header>
+
+        <main class="main">
+            <section class="main__play-menu">
+                <article class="menu--title">
+                    <h2 class="title-text">WELCOME</h2>
+                </article>
+
+                <article class="menu--play">
+                    <button class="button play-button">
+                        <i class="fa-solid fa-play play-button-icon"></i>
+                    </button>
+                </article>
+            </section>
+
+            <aside class="main__aside"></aside>
+
+            <section class="main__section-game">
+                <!-- <article class="game__square"></article> -->
+            </section>
+
+            <section class="main__play-again">
+                <article class="menu--title">
+                    <h2 class="title-text">GAME OVER!</h2>
+                </article>
+
+                <article class="menu--play">
+                    <button class="button play-again">
+                        <span class="play-again-text">PLAY AGAIN</span>
+                    </button>
+
+                    <div class="end-score">
+                        <article class="end-score--current">
+                            <h2 class="end-score__text">
+                                Your Score: <span class="end-current-score">0</span>
+                            </h2>
+                        </article>
+
+                        <article class="end-score--high">
+                            <h2 class="end-score__text">
+                                High Score: <span class="end-high-score">0</span>
+                            </h2>
+                        </article>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <!-- <footer class="footer">
+            <section class="footer__info">
+                <span class="footer__info-text">
+                    Developed by
+                    <strong class="dev-name">Karthik Kumar</strong>
+                    &copy;
+                    <span class="copyright-year">2022</span>
+                </span>
+            </section>
+
+            <section class="footer__links">
+                <ul class="links__list">
+                    <li class="list__item">
+                        <a href="#" class="link-icon twitter" target="_blank">
+                            <i class="fa-brands fa-twitter"></i>
+                        </a>
+                    </li>
+                    <li class="list__item">
+                        <a href="#" class="link-icon github" target="_blank">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
+                    </li>
+                    <li class="list__item">
+                        <a href="#" class="link-icon coffee" target="_blank">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </footer> -->
+    </body>
+</html>

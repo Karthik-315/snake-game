@@ -1,0 +1,435 @@
+"use strict";
+
+/* Variables */
+const headerThemeButton = document.querySelector(".header__theme");
+const lightThemeIcon = document.querySelector(".theme--light-icon");
+const darkThemeIcon = document.querySelector(".theme--dark-icon");
+
+const menuTitle = document.querySelector(".title-text");
+const playMenu = document.querySelector(".main__play-menu");
+const playButton = document.querySelector(".play-button");
+const playButtonText = document.querySelector(".play-button-text");
+const playAgainText = document.querySelector(".play-again-text");
+
+const scoreArea = document.querySelector(".header__score");
+const currentScoreText = document.querySelector(".current-score");
+const highScoreText = document.querySelector(".high-score");
+
+const gameArea = document.querySelector(".main__section-game");
+
+const playAgainScreen = document.querySelector(".main__play-again");
+const playAgainTitle = document.querySelector(".title-text");
+const playAgainButton = document.querySelector(".play-again");
+
+const endCurrentScore = document.querySelector(".end-current-score");
+const endHighScore = document.querySelector(".end-high-score");
+
+let highScore,
+    currentScore = 0;
+
+const [squaresPerRow, squaresPerColumn] = [12, 12];
+
+let currentDirection;
+let snakeHeadClass, snakeHead, snakeFoodClass, snakeFood;
+let tailRowPos, tailColPos;
+let snakeBody = [];
+let filledSquares = [];
+let emptySquares = [];
+let movementInterval;
+const movementTime = 200;
+
+/* Functions */
+const setTheme = function (theme) {
+    if (theme === "dark") {
+        document.body.classList.remove("light-mode");
+
+        lightThemeIcon.classList.remove("hidden");
+        darkThemeIcon.classList.add("hidden");
+    } else {
+        document.body.classList.add("light-mode");
+
+        lightThemeIcon.classList.add("hidden");
+        darkThemeIcon.classList.remove("hidden");
+    }
+};
+
+const drawGameGrid = function () {
+    currentScore = 0;
+    currentScoreText.innerHTML = currentScore;
+    scoreArea.classList.remove("end-game");
+    scoreArea.classList.remove("hidden");
+
+    // Margin between each square (horizontal and vertical)
+    const marginOffset = 0.4;
+    const [screenHeight, screenWidth] = [gameArea.offsetHeight, gameArea.offsetWidth];
+
+    let [squareHeight, squareWidth] = [];
+
+    // Calculate square height based on the screen size.
+    if (screenHeight > screenWidth) {
+        squareHeight = squareWidth = Math.floor(
+            screenWidth / Math.floor(squaresPerRow + squaresPerRow * marginOffset)
+        );
+    } else {
+        squareHeight = squareWidth = Math.floor(
+            screenHeight / Math.floor(squaresPerRow + squaresPerRow * marginOffset)
+        );
+    }
+
+    // Form the HTML code required by the play area.
+    let gameSquareHTML = "";
+
+    for (let col = 0; col < squaresPerColumn; col++) {
+        const rowClass = `row-${col}`;
+        gameSquareHTML += `<article class="game__square-row ${rowClass}">`;
+
+        for (let row = 0; row < squaresPerRow; row++) {
+            const colClass = `col-${row}`;
+            const squareClass = `square-${rowClass}-${colClass}`;
+            gameSquareHTML += `<div class="game__square ${squareClass}"></div>`;
+        }
+        gameSquareHTML += `</article>`;
+    }
+
+    // Create the play grid and assign corresponding classes.
+    gameArea.innerHTML = gameSquareHTML;
+
+    Array.from(document.querySelectorAll(".game__square")).forEach((square) => {
+        square.style.height = `${squareHeight}px`;
+        square.style.width = `${squareWidth}px`;
+    });
+};
+
+const updateGameStatus = function () {
+    filledSquares = [];
+    emptySquares = [];
+
+    // Keeps record of all empty and occupied slots.
+    document.querySelectorAll(".game__square").forEach((square) => {
+        if (square.matches(".snake-body, .snake-head, .food-active")) {
+            filledSquares.push(square.classList[1]);
+        } else {
+            emptySquares.push(square.classList[1]);
+        }
+    });
+};
+
+const updateGameScore = function () {
+    currentScoreText.innerHTML = currentScore;
+    if (currentScore > highScore) {
+        highScore = currentScore;
+        window.localStorage.setItem("highScore", highScore);
+        highScoreText.innerHTML = highScore;
+    }
+};
+
+const endGame = function (status) {
+    // Hide play area, display the play again screen and reset the game status,
+    gameArea.style.opacity = 0;
+    playAgainTitle.innerHTML = "GAME OVER!";
+    playAgainButton.innerHTML = `
+        <span class="play-again-text">PLAY AGAIN</span>
+    `;
+
+    snakeBody = [];
+
+    playAgainScreen.classList.remove("hidden");
+    playAgainScreen.classList.remove("exit-animation");
+    playAgainScreen.classList.add("entry-animation");
+
+    scoreArea.classList.add("end-game");
+
+    endCurrentScore.innerHTML = currentScore;
+    endHighScore.innerHTML = highScore;
+    scoreArea.classList.add("hidden");
+};
+
+const consumeFood = function (direction, tailRowPos, tailColPos) {
+    // Add new body element to the snake.
+    let nextBlockPos;
+
+    /* prettier-ignore */
+    if (direction === "up") {
+        nextBlockPos = `.square-row-${tailRowPos + 1}-col-${tailColPos}`;
+
+        if (tailRowPos >= 11 || tailColPos <= 0)
+            nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos + 1}`;
+        else if (tailRowPos >= 11 || tailColPos >= 11)
+            nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos - 1}`;
+    } 
+    else if (direction === "right") {
+        nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos - 1}`;
+
+        if (tailRowPos >= 11 || tailColPos <= 0)
+            nextBlockPos = `.square-row-${tailRowPos - 1}-col-${tailColPos}`;
+        else if (tailRowPos <= 0 || tailColPos <= 0)
+            nextBlockPos = `.square-row-${tailRowPos + 1}-col-${tailColPos}`;
+    } 
+    else if (direction === "down") {
+        nextBlockPos = `.square-row-${tailRowPos - 1}-col-${tailColPos}`;
+
+        if (tailRowPos <= 0 || tailColPos <= 0)
+            nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos + 1}`;
+        else if (tailRowPos <= 0 || tailColPos >= 11)
+            nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos - 1}`;
+    } 
+    else if (direction === "left") {
+        nextBlockPos = `.square-row-${tailRowPos}-col-${tailColPos + 1}`;
+
+        if (tailRowPos >= 11 || tailColPos >= 11)
+            nextBlockPos = `.square-row-${tailRowPos - 1}-col-${tailColPos}`;
+        else if (tailRowPos <= 0 || tailColPos >= 11)
+            nextBlockPos = `.square-row-${tailRowPos + 1}-col-${tailColPos}`;
+        
+    }
+
+    document.querySelector(nextBlockPos).classList.add("snake-body");
+
+    // Push the new block to the snake body array.
+    snakeBody.push(nextBlockPos);
+
+    // Remove food and create new food element in a random empty slot.
+    snakeFood.classList.remove("food-active");
+
+    const randomEmptySlot = Math.floor(Math.random() * emptySquares.length);
+    const newFoodClass = emptySquares[randomEmptySlot];
+
+    snakeFoodClass = newFoodClass;
+
+    snakeFood = document.querySelector(`.${snakeFoodClass}`);
+    snakeFood.classList.add("food-active");
+
+    currentScore++;
+    updateGameScore();
+};
+
+const moveSnake = function (direction) {
+    currentDirection = direction;
+
+    // Stop previous movement everytime (if any) a new key press is detected.
+    clearInterval(movementInterval);
+
+    let headRowPos = Number.parseInt(snakeHeadClass.split("-")[2]);
+    let headColPos = Number.parseInt(snakeHeadClass.split("-")[4]);
+
+    movementInterval = setInterval(function () {
+        document
+            .querySelector(`.square-row-${headRowPos}-col-${headColPos}`)
+            .classList.remove("snake-head");
+
+        if (direction === "up") headRowPos--;
+        else if (direction === "right") headColPos++;
+        else if (direction === "down") headRowPos++;
+        else if (direction === "left") headColPos--;
+
+        if (headRowPos < 0 || headColPos < 0 || headRowPos >= 12 || headColPos >= 12) {
+            clearInterval(movementInterval);
+            endGame("lost");
+            return;
+        }
+
+        document
+            .querySelector(`.square-row-${headRowPos}-col-${headColPos}`)
+            .classList.add("snake-head");
+
+        snakeHeadClass = document.querySelector(".snake-head").classList[1];
+        snakeHead = document.querySelector(`.${snakeHeadClass}`);
+
+        if (snakeBody.includes(`.${snakeHeadClass}`)) {
+            clearInterval(movementInterval);
+            endGame("lost");
+            return;
+        }
+
+        // Update the position of the rest of the snake.
+        let lastIndex = snakeBody.length - 1;
+        let currIndex = lastIndex;
+
+        snakeBody.forEach((_, index) => {
+            if (index > 0) {
+                document.querySelector(snakeBody[index]).classList.remove("snake-body");
+            }
+        });
+
+        snakeBody.forEach((_, index) => {
+            if (index > 0) {
+                snakeBody[currIndex] = snakeBody[currIndex - 1];
+                currIndex--;
+
+                if (index === lastIndex) {
+                    let tailElement = document.querySelector(snakeBody[index])
+                        .classList[1];
+                    tailRowPos = Number.parseInt(tailElement.split("-")[2]);
+                    tailColPos = Number.parseInt(tailElement.split("-")[4]);
+                }
+            }
+        });
+
+        snakeBody.forEach((_, index) => {
+            if (index > 0) {
+                document.querySelector(snakeBody[index]).classList.add("snake-body");
+            }
+        });
+
+        if (snakeBody.length === 1) {
+            tailRowPos = headRowPos;
+            tailColPos = headColPos;
+        }
+
+        snakeBody[0] = `.${snakeHeadClass}`;
+
+        // Add snake body.
+        if (snakeFoodClass === snakeHeadClass) {
+            consumeFood(direction, tailRowPos, tailColPos);
+        }
+
+        updateGameStatus();
+    }, movementTime);
+};
+
+const startGame = function () {
+    snakeBody = [];
+    // Initial position of the snake.
+    document.querySelector(".square-row-11-col-0").classList.add("snake-head");
+
+    snakeBody.push(".square-row-11-col-0");
+
+    // Compute random initial position of food.
+    const computeRandomPosition = function () {
+        const randheadRowPosition = Math.floor(Math.random() * 11);
+        const randheadColPosition = Math.floor(Math.random() * 11);
+
+        randheadRowPosition === 11 &&
+            randheadColPosition === 0 &&
+            computeRandomPosition();
+        return `square-row-${randheadRowPosition}-col-${randheadColPosition}`;
+    };
+
+    document.querySelector(`.${computeRandomPosition()}`).classList.add("food-active");
+
+    snakeHeadClass = document.querySelector(".snake-head").classList[1];
+    snakeHead = document.querySelector(`.${snakeHeadClass}`);
+
+    snakeFoodClass = document.querySelector(".food-active").classList[1];
+    snakeFood = document.querySelector(`.${snakeFoodClass}`);
+
+    updateGameStatus();
+    moveSnake("right");
+};
+
+const readNextMove = function (e) {
+    const pressedKey = `${e.key}`.toLowerCase();
+
+    if (pressedKey === " ") {
+        if (!playAgainText.classList.contains("hidden")) {
+            animateOverlay("menu");
+        }
+    }
+
+    // Do not record any keystrokes other than the space key, if the user is at the menu screen.
+    if (!playAgainText.classList.contains("hidden")) return;
+
+    // Move the snake, but not in the opposite direction.
+    if (pressedKey === "w") {
+        currentDirection != "down" && moveSnake("up");
+    } else if (pressedKey === "d") {
+        currentDirection != "left" && moveSnake("right");
+    } else if (pressedKey === "s") {
+        currentDirection != "up" && moveSnake("down");
+    } else if (pressedKey === "a") {
+        currentDirection != "right" && moveSnake("left");
+    } else {
+        return;
+    }
+};
+
+const animateOverlay = function (screen) {
+    drawGameGrid();
+    let timerCounter = 3;
+
+    if (screen === "menu") {
+        menuTitle.innerHTML = "GET READY!";
+        playAgainText.classList.add("hidden");
+        playButton.innerHTML = `
+            <span class="play-button-text">${timerCounter}</span> 
+        `;
+    } else {
+        playAgainTitle.innerHTML = "GET READY!";
+
+        playAgainButton.innerHTML = `
+            <span class="play-again-button-text">${timerCounter}</span> 
+        `;
+    }
+
+    const playTimerAnimation = setInterval(() => {
+        timerCounter--;
+
+        if (screen === "menu") {
+            playButton.innerHTML = `
+            <span class="play-button-text">${timerCounter}</span> 
+        `;
+        } else {
+            playAgainButton.innerHTML = `
+            <span class="play-again-button-text">${timerCounter}</span> 
+        `;
+        }
+
+        if (timerCounter <= 0) {
+            clearInterval(playTimerAnimation);
+            setTimeout(() => {
+                if (screen === "menu") {
+                    playMenu.classList.add("exit-animation");
+
+                    setTimeout(() => {
+                        playMenu.classList.add("hidden");
+                    }, 1000);
+                } else {
+                    gameArea.style.opacity = 1;
+                    playAgainScreen.classList.add("exit-animation");
+                    playAgainScreen.classList.remove("entry-animation");
+
+                    setTimeout(() => {
+                        playAgainScreen.classList.add("hidden");
+                    }, 1000);
+                }
+                startGame();
+            }, 5);
+        }
+    }, 10);
+};
+
+const initialize = function () {
+    // Check for locally stored theme preference, else default to dark theme.
+    let theme = window.localStorage.getItem("snakeGameTheme") || "dark";
+    setTheme(theme);
+    window.localStorage.setItem("snakeGameTheme", theme);
+
+    highScore = Number.parseInt(window.localStorage.getItem("highScore")) || 0;
+
+    highScoreText.innerHTML = highScore;
+    currentScoreText.innerHTML = currentScore;
+};
+
+initialize();
+
+/* Event Listeners */
+headerThemeButton.addEventListener("click", function () {
+    let theme = window.localStorage.getItem("snakeGameTheme");
+    if (theme === "dark") {
+        setTheme("light");
+        theme = "light";
+        window.localStorage.setItem("snakeGameTheme", theme);
+    } else if (theme === "light") {
+        setTheme("dark");
+        theme = "dark";
+        window.localStorage.setItem("snakeGameTheme", theme);
+    }
+});
+
+playButton.addEventListener("click", function () {
+    animateOverlay("menu");
+});
+document.body.addEventListener("keydown", readNextMove);
+playAgainButton.addEventListener("click", function () {
+    animateOverlay("playAgain");
+});
