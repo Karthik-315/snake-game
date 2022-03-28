@@ -38,6 +38,9 @@ let emptySquares = [];
 let movementInterval;
 const movementTime = 200;
 
+// Touch Inputs
+let startingX, startingY, movingX, movingY;
+
 /* Functions */
 const setTheme = function (theme) {
     if (theme === "dark") {
@@ -115,6 +118,7 @@ const updateGameStatus = function () {
 };
 
 const updateGameScore = function () {
+    // Duh!
     currentScoreText.innerHTML = currentScore;
     if (currentScore > highScore) {
         highScore = currentScore;
@@ -125,11 +129,11 @@ const updateGameScore = function () {
 
 const endGame = function (status) {
     // Hide play area, display the play again screen and reset the game status.
-    // document.querySelector(`.${snakeHeadClass}`).classList.add("game-over");
     document.querySelectorAll(`.game__square`).forEach((square) => {
         square.classList.add("game-over");
     });
 
+    // 1s delay before displaying the score and play again screen.
     setTimeout(() => {
         gameArea.style.opacity = 0;
         playAgainTitle.innerHTML = "GAME OVER!";
@@ -155,6 +159,7 @@ const consumeFood = function (direction, tailRowPos, tailColPos) {
     // Add new body element to the snake.
     let nextBlockPos;
 
+    // Various conditions to determine the position of the new body.
     /* prettier-ignore */
     if (direction === "up") {
         nextBlockPos = `.square-row-${tailRowPos + 1}-col-${tailColPos}`;
@@ -190,9 +195,8 @@ const consumeFood = function (direction, tailRowPos, tailColPos) {
         
     }
 
+    // Add new body and push the new block to the snake body array.
     document.querySelector(nextBlockPos).classList.add("snake-body");
-
-    // Push the new block to the snake body array.
     snakeBody.push(nextBlockPos);
 
     // Remove food and create new food element in a random empty slot.
@@ -206,6 +210,7 @@ const consumeFood = function (direction, tailRowPos, tailColPos) {
     snakeFood = document.querySelector(`.${snakeFoodClass}`);
     snakeFood.classList.add("food-active");
 
+    // Update score.
     currentScore++;
     updateGameScore();
 };
@@ -220,6 +225,7 @@ const moveSnake = function (direction) {
     let headColPos = Number.parseInt(snakeHeadClass.split("-")[4]);
 
     movementInterval = setInterval(function () {
+        // Remove the current snake head and update the position based on user input.
         document
             .querySelector(`.square-row-${headRowPos}-col-${headColPos}`)
             .classList.remove("snake-head");
@@ -229,12 +235,14 @@ const moveSnake = function (direction) {
         else if (direction === "down") headRowPos++;
         else if (direction === "left") headColPos--;
 
+        // If snake goes beyond game area, end the game.
         if (headRowPos < 0 || headColPos < 0 || headRowPos >= 12 || headColPos >= 12) {
             clearInterval(movementInterval);
             endGame("lost");
             return;
         }
 
+        // Update new position of snake head.
         document
             .querySelector(`.square-row-${headRowPos}-col-${headColPos}`)
             .classList.add("snake-head");
@@ -242,6 +250,7 @@ const moveSnake = function (direction) {
         snakeHeadClass = document.querySelector(".snake-head").classList[1];
         snakeHead = document.querySelector(`.${snakeHeadClass}`);
 
+        // If snake head runs into its own body, end the game.
         if (snakeBody.includes(`.${snakeHeadClass}`)) {
             clearInterval(movementInterval);
             endGame("lost");
@@ -258,6 +267,7 @@ const moveSnake = function (direction) {
             }
         });
 
+        // Switch the position of the snake body one by one.
         snakeBody.forEach((_, index) => {
             if (index > 0) {
                 snakeBody[currIndex] = snakeBody[currIndex - 1];
@@ -314,6 +324,7 @@ const startGame = function () {
 
     document.querySelector(`.${computeRandomPosition()}`).classList.add("food-active");
 
+    // Store initial position of snake and food.
     snakeHeadClass = document.querySelector(".snake-head").classList[1];
     snakeHead = document.querySelector(`.${snakeHeadClass}`);
 
@@ -321,11 +332,16 @@ const startGame = function () {
     snakeFood = document.querySelector(`.${snakeFoodClass}`);
 
     updateGameStatus();
+
+    // First move to right by deafult.
     moveSnake("right");
 };
 
-const readNextMove = function (e) {
+// Move the snake based on user input.
+const readUserInput = function (e, touchInput) {
     const pressedKey = `${e.key}`.toLowerCase();
+
+    console.log(`Key: ${touchInput}`);
 
     if (pressedKey === " ") {
         if (!playAgainText.classList.contains("hidden")) {
@@ -337,19 +353,24 @@ const readNextMove = function (e) {
     if (!playAgainText.classList.contains("hidden")) return;
 
     // Move the snake, but not in the opposite direction.
-    if (pressedKey === "w") {
+    if (pressedKey === "w" || pressedKey == "arrowup" || touchInput === "up") {
         currentDirection != "down" && moveSnake("up");
-    } else if (pressedKey === "d") {
+    } else if (
+        pressedKey === "d" ||
+        pressedKey == "arrowright" ||
+        touchInput === "right"
+    ) {
         currentDirection != "left" && moveSnake("right");
-    } else if (pressedKey === "s") {
+    } else if (pressedKey === "s" || pressedKey == "arrowdown" || touchInput === "down") {
         currentDirection != "up" && moveSnake("down");
-    } else if (pressedKey === "a") {
+    } else if (pressedKey === "a" || pressedKey == "arrowleft" || touchInput === "left") {
         currentDirection != "right" && moveSnake("left");
     } else {
         return;
     }
 };
 
+// Execute animations for welcome and playagain screens.
 const animateOverlay = function (screen) {
     drawGameGrid();
     let timerCounter = 3;
@@ -433,10 +454,37 @@ headerThemeButton.addEventListener("click", function () {
     }
 });
 
+// Start the game
 playButton.addEventListener("click", function () {
     animateOverlay("menu");
 });
-document.body.addEventListener("keydown", readNextMove);
+
+// Swipe input for touch devices.
+document.body.addEventListener("keydown", function (e) {
+    readUserInput(e);
+});
+
+document.body.addEventListener("touchstart", function (e) {
+    startingX = e.targetTouches[0].clientX;
+    startingY = e.targetTouches[0].clientY;
+});
+
+document.body.addEventListener("touchmove", function (e) {
+    movingX = e.targetTouches[0].clientX;
+    movingY = e.targetTouches[0].clientY;
+});
+
+document.body.addEventListener("touchend", function (e) {
+    // 100 -> swipe threshold value.
+
+    if (startingY - 100 > movingY) readUserInput(e, "up");
+    else if (startingY + 100 < movingY) readUserInput(e, "down");
+
+    if (startingX + 100 < movingX) readUserInput(e, "right");
+    else if (startingX - 100 > movingX) readUserInput(e, "left");
+});
+
+// Retry game.
 playAgainButton.addEventListener("click", function () {
     animateOverlay("playAgain");
 });
