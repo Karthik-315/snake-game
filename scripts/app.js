@@ -9,7 +9,7 @@ const menuTitle = document.querySelector(".title-text");
 const playMenu = document.querySelector(".main__play-menu");
 const playButton = document.querySelector(".play-button");
 const playButtonText = document.querySelector(".play-button-text");
-const playAgainText = document.querySelector(".play-again-text");
+const playAgainText = document.querySelector(".play-again-button-text");
 
 const scoreArea = document.querySelector(".header__score");
 const currentScoreText = document.querySelector(".current-score");
@@ -133,12 +133,13 @@ const endGame = function (status) {
         square.classList.add("game-over");
     });
 
+    playAgainButton.classList.remove("timer");
     // 1s delay before displaying the score and play again screen.
     setTimeout(() => {
         gameArea.style.opacity = 0;
         playAgainTitle.innerHTML = "GAME OVER!";
         playAgainButton.innerHTML = `
-        <span class="play-again-text">PLAY AGAIN</span>
+        <span class="play-again-button-text">PLAY AGAIN</span>
     `;
 
         snakeBody = [];
@@ -382,11 +383,13 @@ const animateOverlay = function (screen) {
             <span class="play-button-text">${timerCounter}</span> 
         `;
     } else {
-        playAgainTitle.innerHTML = "GET READY!";
+        playAgainTitle.innerHTML = "GAME OVER!";
 
         playAgainButton.innerHTML = `
-            <span class="play-again-button-text">${timerCounter}</span> 
+            <span class="play-again-button-text timer">${timerCounter}</span> 
         `;
+
+        playAgainButton.classList.add("timer");
     }
 
     const playTimerAnimation = setInterval(() => {
@@ -398,7 +401,7 @@ const animateOverlay = function (screen) {
         `;
         } else {
             playAgainButton.innerHTML = `
-            <span class="play-again-button-text">${timerCounter}</span> 
+            <span class="play-again-button-text timer">${timerCounter}</span> 
         `;
         }
 
