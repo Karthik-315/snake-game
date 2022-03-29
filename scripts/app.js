@@ -423,7 +423,7 @@ const animateOverlay = function (screen) {
                 startGame();
             }, 5);
         }
-    }, 10);
+    }, 700);
 };
 
 const initialize = function () {
