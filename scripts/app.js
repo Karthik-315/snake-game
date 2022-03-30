@@ -1,24 +1,23 @@
 "use strict";
 
 /* Variables */
+const scoreArea = document.querySelector(".header__score");
+const currentScoreText = document.querySelector(".current-score");
+const highScoreText = document.querySelector(".high-score");
 const headerThemeButton = document.querySelector(".header__theme");
 const lightThemeIcon = document.querySelector(".theme--light-icon");
 const darkThemeIcon = document.querySelector(".theme--dark-icon");
 
-const menuTitle = document.querySelector(".title-text");
 const playMenu = document.querySelector(".main__play-menu");
 const playButton = document.querySelector(".play-button");
-const playButtonText = document.querySelector(".play-button-text");
-const playAgainText = document.querySelector(".play-again-button-text");
 
-const scoreArea = document.querySelector(".header__score");
-const currentScoreText = document.querySelector(".current-score");
-const highScoreText = document.querySelector(".high-score");
+const countdownArea = document.querySelector(".main__loading-timer");
+const countdownTimerText = document.querySelector(".timer-countdown");
 
 const gameArea = document.querySelector(".main__section-game");
+let isGameActive = false;
 
-const playAgainScreen = document.querySelector(".main__play-again");
-const playAgainTitle = document.querySelector(".title-text");
+const playAgainMenu = document.querySelector(".main__play-again");
 const playAgainButton = document.querySelector(".play-again");
 
 const endScoreContainer = document.querySelector(".end-score");
@@ -58,6 +57,7 @@ const setTheme = function (theme) {
 };
 
 const drawGameGrid = function () {
+    gameArea.style.opacity = 1;
     currentScore = 0;
     currentScoreText.innerHTML = currentScore;
     scoreArea.classList.remove("end-game");
@@ -134,23 +134,15 @@ const endGame = function (status) {
         square.classList.add("game-over");
     });
 
-    playAgainButton.classList.remove("timer");
+    isGameActive = false;
+
     // 1s delay before displaying the score and play again screen.
     setTimeout(() => {
         gameArea.style.opacity = 0;
-        playAgainTitle.innerHTML = "GAME OVER!";
-        playAgainButton.innerHTML = `
-        <span class="play-again-button-text">PLAY AGAIN</span>
-    `;
 
         snakeBody = [];
 
-        playAgainScreen.classList.remove("hidden");
-        playAgainScreen.classList.remove("exit-animation");
-        playAgainScreen.classList.add("entry-animation");
-
-        scoreArea.classList.add("end-game");
-
+        playAgainMenu.classList.remove("hidden");
         endScoreContainer.classList.remove("hidden");
         endCurrentScore.innerHTML = currentScore;
         endHighScore.innerHTML = highScore;
@@ -307,8 +299,30 @@ const moveSnake = function (direction) {
     }, movementTime);
 };
 
+const startTimer = function () {
+    let timerValue = 3;
+
+    playMenu.classList.add("hidden");
+    playAgainMenu.classList.add("hidden");
+    countdownArea.classList.remove("hidden");
+    drawGameGrid();
+
+    let timerInterval = setInterval(function () {
+        countdownTimerText.innerHTML = timerValue--;
+
+        if (timerValue < 0) {
+            clearInterval(timerInterval);
+            countdownArea.classList.add("hidden");
+            startGame();
+            countdownTimerText.innerHTML = 3;
+        }
+    }, 700);
+};
+
 const startGame = function () {
+    isGameActive = true;
     snakeBody = [];
+
     // Initial position of the snake.
     document.querySelector(".square-row-11-col-0").classList.add("snake-head");
 
@@ -344,16 +358,14 @@ const startGame = function () {
 const readUserInput = function (e, touchInput) {
     const pressedKey = `${e.key}`.toLowerCase();
 
-    console.log(`Key: ${touchInput}`);
-
     if (pressedKey === " ") {
-        if (!playAgainText.classList.contains("hidden")) {
-            animateOverlay("menu");
+        if (!isGameActive) {
+            startTimer();
         }
     }
 
     // Do not record any keystrokes other than the space key, if the user is at the menu screen.
-    if (!playAgainText.classList.contains("hidden")) return;
+    if (!isGameActive) return;
 
     // Move the snake, but not in the opposite direction.
     if (pressedKey === "w" || pressedKey == "arrowup" || touchInput === "up") {
@@ -371,65 +383,6 @@ const readUserInput = function (e, touchInput) {
     } else {
         return;
     }
-};
-
-// Execute animations for welcome and playagain screens.
-const animateOverlay = function (screen) {
-    drawGameGrid();
-    let timerCounter = 3;
-
-    if (screen === "menu") {
-        menuTitle.innerHTML = "GET READY!";
-        playAgainText.classList.add("hidden");
-        playButton.innerHTML = `
-            <span class="play-button-text">${timerCounter}</span> 
-        `;
-    } else {
-        playAgainTitle.innerHTML = "GET READY!";
-
-        playAgainButton.innerHTML = `
-            <span class="play-again-button-text timer">${timerCounter}</span> 
-        `;
-
-        playAgainButton.classList.add("timer");
-        endScoreContainer.classList.add("hidden");
-    }
-
-    const playTimerAnimation = setInterval(() => {
-        timerCounter--;
-
-        if (screen === "menu") {
-            playButton.innerHTML = `
-            <span class="play-button-text">${timerCounter}</span> 
-        `;
-        } else {
-            playAgainButton.innerHTML = `
-            <span class="play-again-button-text timer">${timerCounter}</span> 
-        `;
-        }
-
-        if (timerCounter <= 0) {
-            clearInterval(playTimerAnimation);
-            setTimeout(() => {
-                if (screen === "menu") {
-                    playMenu.classList.add("exit-animation");
-
-                    setTimeout(() => {
-                        playMenu.classList.add("hidden");
-                    }, 1000);
-                } else {
-                    gameArea.style.opacity = 1;
-                    playAgainScreen.classList.add("exit-animation");
-                    playAgainScreen.classList.remove("entry-animation");
-
-                    setTimeout(() => {
-                        playAgainScreen.classList.add("hidden");
-                    }, 1000);
-                }
-                startGame();
-            }, 5);
-        }
-    }, 700);
 };
 
 const initialize = function () {
@@ -462,7 +415,7 @@ headerThemeButton.addEventListener("click", function () {
 
 // Start the game
 playButton.addEventListener("click", function () {
-    animateOverlay("menu");
+    startTimer();
 });
 
 // Swipe input for touch devices.
@@ -482,7 +435,6 @@ document.body.addEventListener("touchmove", function (e) {
 
 document.body.addEventListener("touchend", function (e) {
     // 100 -> swipe threshold value.
-
     if (startingY - 100 > movingY) readUserInput(e, "up");
     else if (startingY + 100 < movingY) readUserInput(e, "down");
 
@@ -492,5 +444,5 @@ document.body.addEventListener("touchend", function (e) {
 
 // Retry game.
 playAgainButton.addEventListener("click", function () {
-    animateOverlay("playAgain");
+    startTimer();
 });
