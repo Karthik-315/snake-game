@@ -122,7 +122,8 @@ body.light-mode .header {
     font-weight: 900;
 }
 
-.body.light-mode .play-button-text {
+.body.light-mode .play-button-text,
+.body.light-mode .play-button-icon {
     color: rgb(212, 107, 8);
     background: white;
 }
@@ -159,6 +160,7 @@ body.light-mode .game__square {
 
 .body.light-mode .game__square.snake-head {
     background: rgb(150, 33, 3);
+    background: rgb(182, 81, 14);
 }
 
 .game__square.snake-body {
@@ -226,34 +228,44 @@ body.light-mode .game__square {
     font-size: 4rem;
     background: #fff;
     color: rgb(20, 20, 20);
-    border-radius: 0.2rem;
+    border-radius: 0.4rem;
 }
 
 .play-again.timer {
-    background: rgb(20, 20, 20);
+    background: transparent;
     color: #fff;
     border-radius: 0.2rem;
 }
 
 body.light-mode .play-again {
     background: rgb(212, 107, 8);
+    color: #fff;
     box-shadow: 0.2rem 0.3rem 0.5rem 0 #ccc;
+}
+
+body.light-mode .play-again.timer {
+    background: transparent;
+    box-shadow: none;
 }
 
 .play-again-button-text {
     font-size: 5rem;
     color: #000;
-    background: none;
+    background: transparent;
 }
 
 .play-again-button-text.timer {
     font-weight: 900;
-    background: rgb(20, 20, 20);
     color: #fff;
 }
 
-.body.light-mode .play-again-text {
+.body.light-mode .play-again-button-text {
     color: #fff;
+}
+
+.body.light-mode .play-again-button-text.timer {
+    font-weight: 900;
+    color: rgb(212, 107, 8);
 }
 
 .end-score {

@@ -21,6 +21,7 @@ const playAgainScreen = document.querySelector(".main__play-again");
 const playAgainTitle = document.querySelector(".title-text");
 const playAgainButton = document.querySelector(".play-again");
 
+const endScoreContainer = document.querySelector(".end-score");
 const endCurrentScore = document.querySelector(".end-current-score");
 const endHighScore = document.querySelector(".end-high-score");
 
@@ -150,6 +151,7 @@ const endGame = function (status) {
 
         scoreArea.classList.add("end-game");
 
+        endScoreContainer.classList.remove("hidden");
         endCurrentScore.innerHTML = currentScore;
         endHighScore.innerHTML = highScore;
         scoreArea.classList.add("hidden");
@@ -383,13 +385,14 @@ const animateOverlay = function (screen) {
             <span class="play-button-text">${timerCounter}</span> 
         `;
     } else {
-        playAgainTitle.innerHTML = "GAME OVER!";
+        playAgainTitle.innerHTML = "GET READY!";
 
         playAgainButton.innerHTML = `
             <span class="play-again-button-text timer">${timerCounter}</span> 
         `;
 
         playAgainButton.classList.add("timer");
+        endScoreContainer.classList.add("hidden");
     }
 
     const playTimerAnimation = setInterval(() => {
