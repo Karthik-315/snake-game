@@ -14,7 +14,8 @@
     height: var(--header-height);
     margin: 0;
     padding: 0 2rem;
-    background: #000;
+    background: #03101b;
+    background: rgb(30, 30, 30);
     color: #fff;
 }
 
@@ -187,7 +188,6 @@ body.light-mode .game__square {
 
 .body.light-mode .game__square.snake-head {
     background: rgb(150, 33, 3);
-    background: rgb(182, 81, 14);
 }
 
 .game__square.snake-body {
@@ -254,7 +254,8 @@ body.light-mode .play-again {
 }
 
 .play-again-button-text {
-    font-size: 5rem;
+    font-size: 4rem;
+    font-weight: 600;
     color: #000;
     background: transparent;
 }
